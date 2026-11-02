@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    // Surchargé en prod par NUXT_PUBLIC_API_URL
+    public: { apiUrl: 'http://localhost:3001' },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'fr' },
