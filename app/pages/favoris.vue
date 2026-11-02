@@ -22,7 +22,7 @@ const { favoris, pret } = useFavoris()
         name="carte"
         class="grille-cartes"
       >
-        <PokemonCard v-for="id in favoris" :id="id" :key="id" />
+        <PokemonCard v-for="item in favoris" :id="item.id" :key="item.id" />
       </TransitionGroup>
 
       <div v-else class="etat-vide">

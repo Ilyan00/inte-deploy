@@ -2,7 +2,7 @@
 const PAR_PAGE = 24
 
 const recherche = ref('')
-const type = ref<string | null>(null)
+const type = ref<TypePokemon | null>(null)
 const typesOuverts = ref(false)
 const limite = ref(PAR_PAGE)
 
@@ -39,7 +39,7 @@ watch([recherche, type], () => {
   limite.value = PAR_PAGE
 })
 
-function choisirType(t: string | null) {
+function choisirType(t: TypePokemon | null) {
   type.value = type.value === t ? null : t
   // On replie après un choix : le type actif reste visible seul
   typesOuverts.value = false

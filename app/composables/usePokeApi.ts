@@ -3,24 +3,7 @@ const API = 'https://pokeapi.co/api/v2'
 // Au-delà de 1025, PokéAPI renvoie des formes alternatives (Méga, Gigamax…) qu'on ne veut pas en doublon.
 export const NB_POKEMON = 1025
 
-export interface PokemonResume {
-  id: number
-  nom: string
-}
-
-export interface Pokemon {
-  id: number
-  nom: string
-  types: string[]
-  pv: number
-  attaque: number
-  defense: number
-  vitesse: number
-  taille: number // en mètres
-  poids: number // en kg
-}
-
-export const TYPES: Record<string, string> = {
+export const TYPES: Record<TypePokemon, string> = {
   normal: 'Normal',
   fire: 'Feu',
   water: 'Eau',
@@ -64,7 +47,7 @@ export async function listerPokemon(): Promise<PokemonResume[]> {
   return res.results.map((p) => ({ id: idDepuisUrl(p.url), nom: p.name }))
 }
 
-export async function idsParType(type: string): Promise<number[]> {
+export async function idsParType(type: TypePokemon): Promise<number[]> {
   const res = await $fetch<{ pokemon: { pokemon: { url: string } }[] }>(
     `${API}/type/${type}`,
   )
@@ -79,7 +62,7 @@ interface PokemonBrut {
   name: string
   height: number
   weight: number
-  types: { type: { name: string } }[]
+  types: { type: { name: TypePokemon } }[]
   stats: { base_stat: number; stat: { name: string } }[]
 }
 

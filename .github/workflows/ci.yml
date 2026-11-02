@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    name: ESLint & Prettier
+    name: ESLint, TypeScript & Prettier
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +26,9 @@ jobs:
 
       - name: ESLint
         run: pnpm lint
+
+      - name: TypeScript
+        run: pnpm typecheck
 
       - name: Prettier
         run: pnpm format:check
