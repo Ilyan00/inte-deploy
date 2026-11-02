@@ -1,13 +1,17 @@
 <script setup lang="ts">
 const props = defineProps<{ id: number; nom?: string }>()
 
-const { data: pokemon } = useLazyAsyncData(`pokemon-${props.id}`, () => recupererPokemon(props.id))
+const { data: pokemon } = useLazyAsyncData(`pokemon-${props.id}`, () =>
+  recupererPokemon(props.id),
+)
 const { estFavori, basculer } = useFavoris()
 
 const nom = computed(() => formaterNom(pokemon.value?.nom ?? props.nom ?? ''))
 const favori = computed(() => estFavori(props.id))
 const numero = computed(() => `N° ${String(props.id).padStart(4, '0')}`)
-const couleur = computed(() => `var(--type-${pokemon.value?.types[0] ?? 'normal'})`)
+const couleur = computed(
+  () => `var(--type-${pokemon.value?.types[0] ?? 'normal'})`,
+)
 
 const stats = computed(() =>
   pokemon.value
@@ -58,23 +62,38 @@ function relacher() {
     </header>
 
     <div class="carte__fenetre">
-      <img :src="imagePokemon(id)" :alt="nom" width="475" height="475" loading="lazy" decoding="async" >
+      <img
+        :src="imagePokemon(id)"
+        :alt="nom"
+        width="475"
+        height="475"
+        loading="lazy"
+        decoding="async"
+      />
       <button
         type="button"
         class="carte__fav"
         :aria-pressed="favori"
-        :aria-label="favori ? `Retirer ${nom} des favoris` : `Ajouter ${nom} aux favoris`"
+        :aria-label="
+          favori ? `Retirer ${nom} des favoris` : `Ajouter ${nom} aux favoris`
+        "
         @click="basculer(id)"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2.8l2.84 5.76 6.36.92-4.6 4.48 1.08 6.34L12 17.3l-5.68 2.99 1.08-6.34-4.6-4.48 6.36-.92z" />
+          <path
+            d="M12 2.8l2.84 5.76 6.36.92-4.6 4.48 1.08 6.34L12 17.3l-5.68 2.99 1.08-6.34-4.6-4.48 6.36-.92z"
+          />
         </svg>
       </button>
     </div>
 
     <template v-if="pokemon">
       <ul class="carte__types">
-        <li v-for="type in pokemon.types" :key="type" :style="{ '--t': `var(--type-${type})` }">
+        <li
+          v-for="type in pokemon.types"
+          :key="type"
+          :style="{ '--t': `var(--type-${type})` }"
+        >
           {{ TYPES[type] ?? type }}
         </li>
       </ul>
@@ -83,7 +102,10 @@ function relacher() {
         <div v-for="stat in stats" :key="stat.label">
           <dt>{{ stat.label }}</dt>
           <dd>
-            <span class="barre"><span :style="{ width: `${Math.min(stat.valeur / 160, 1) * 100}%` }" /></span>
+            <span class="barre"
+              ><span
+                :style="{ width: `${Math.min(stat.valeur / 160, 1) * 100}%` }"
+            /></span>
             {{ stat.valeur }}
           </dd>
         </div>
@@ -114,7 +136,11 @@ function relacher() {
   padding: 0.85rem;
   border-radius: 14px;
   background:
-    linear-gradient(160deg, color-mix(in oklab, var(--c) 28%, transparent), transparent 55%),
+    linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--c) 28%, transparent),
+      transparent 55%
+    ),
     var(--surface);
   border: 1px solid color-mix(in oklab, var(--c) 40%, var(--bord));
   box-shadow:
@@ -144,7 +170,11 @@ function relacher() {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(circle at var(--mx) var(--my), rgb(255 255 255 / 0.35), transparent 45%),
+    radial-gradient(
+      circle at var(--mx) var(--my),
+      rgb(255 255 255 / 0.35),
+      transparent 45%
+    ),
     linear-gradient(
       115deg,
       transparent 20%,
@@ -153,8 +183,12 @@ function relacher() {
       rgb(255 230 120 / 0.18) 65%,
       transparent 80%
     );
-  background-size: 100% 100%, 250% 250%;
-  background-position: center, var(--mx) var(--my);
+  background-size:
+    100% 100%,
+    250% 250%;
+  background-position:
+    center,
+    var(--mx) var(--my);
   mix-blend-mode: overlay;
   opacity: 0;
   transition: opacity 300ms ease;
@@ -204,7 +238,11 @@ function relacher() {
   aspect-ratio: 1;
   border-radius: 8px;
   background:
-    radial-gradient(circle at 50% 60%, color-mix(in oklab, var(--c) 55%, transparent), transparent 70%),
+    radial-gradient(
+      circle at 50% 60%,
+      color-mix(in oklab, var(--c) 55%, transparent),
+      transparent 70%
+    ),
     color-mix(in oklab, var(--c) 18%, var(--fond));
   border: 1px solid rgb(255 255 255 / 0.08);
   overflow: hidden;

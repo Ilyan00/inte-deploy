@@ -41,7 +41,8 @@ export const TYPES: Record<string, string> = {
   fairy: 'Fée',
 }
 
-const idDepuisUrl = (url: string) => Number(url.split('/').filter(Boolean).pop())
+const idDepuisUrl = (url: string) =>
+  Number(url.split('/').filter(Boolean).pop())
 
 // L'URL de l'artwork se déduit de l'id : pas besoin d'attendre le détail pour afficher l'image.
 export const imagePokemon = (id: number) =>
@@ -54,15 +55,22 @@ export const formaterNom = (slug: string) =>
     .join(' ')
 
 export async function listerPokemon(): Promise<PokemonResume[]> {
-  const res = await $fetch<{ results: { name: string; url: string }[] }>(`${API}/pokemon`, {
-    query: { limit: NB_POKEMON },
-  })
+  const res = await $fetch<{ results: { name: string; url: string }[] }>(
+    `${API}/pokemon`,
+    {
+      query: { limit: NB_POKEMON },
+    },
+  )
   return res.results.map((p) => ({ id: idDepuisUrl(p.url), nom: p.name }))
 }
 
 export async function idsParType(type: string): Promise<number[]> {
-  const res = await $fetch<{ pokemon: { pokemon: { url: string } }[] }>(`${API}/type/${type}`)
-  return res.pokemon.map((p) => idDepuisUrl(p.pokemon.url)).filter((id) => id <= NB_POKEMON)
+  const res = await $fetch<{ pokemon: { pokemon: { url: string } }[] }>(
+    `${API}/type/${type}`,
+  )
+  return res.pokemon
+    .map((p) => idDepuisUrl(p.pokemon.url))
+    .filter((id) => id <= NB_POKEMON)
 }
 
 // Sous-ensemble de la réponse /pokemon/:id, limité aux champs qu'on lit.
@@ -77,7 +85,8 @@ interface PokemonBrut {
 
 export async function recupererPokemon(id: number): Promise<Pokemon> {
   const p = await $fetch<PokemonBrut>(`${API}/pokemon/${id}`)
-  const stat = (nom: string) => p.stats.find((s) => s.stat.name === nom)?.base_stat ?? 0
+  const stat = (nom: string) =>
+    p.stats.find((s) => s.stat.name === nom)?.base_stat ?? 0
 
   // On ne garde que ce qu'affiche la carte : la réponse brute pèse ~300 Ko par Pokémon.
   return {

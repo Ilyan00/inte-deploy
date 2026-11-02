@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { favoris, pret } = useFavoris();
+const { favoris, pret } = useFavoris()
 </script>
 
 <template>

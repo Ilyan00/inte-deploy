@@ -44,7 +44,11 @@ body {
   min-height: 100dvh;
   font-family: var(--titre);
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgb(232 176 75 / 0.12), transparent),
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgb(232 176 75 / 0.12),
+      transparent
+    ),
     var(--fond);
   color: var(--texte);
   -webkit-font-smoothing: antialiased;

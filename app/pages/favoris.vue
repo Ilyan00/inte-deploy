@@ -1,7 +1,7 @@
 <script setup lang="ts">
-useHead({ title: "Mes favoris · PokéGang" });
+useHead({ title: 'Mes favoris · PokéGang' })
 
-const { favoris, pret } = useFavoris();
+const { favoris, pret } = useFavoris()
 </script>
 
 <template>
@@ -9,8 +9,8 @@ const { favoris, pret } = useFavoris();
     <section class="intro">
       <h1>Mon classeur</h1>
       <p v-if="pret && favoris.length">
-        {{ favoris.length }} carte{{ favoris.length > 1 ? "s" : "" }} rangée{{
-          favoris.length > 1 ? "s" : ""
+        {{ favoris.length }} carte{{ favoris.length > 1 ? 's' : '' }} rangée{{
+          favoris.length > 1 ? 's' : ''
         }}. Clique à nouveau sur l'étoile pour en retirer une.
       </p>
     </section>

@@ -1,48 +1,48 @@
 <script setup lang="ts">
-const PAR_PAGE = 24;
+const PAR_PAGE = 24
 
-const recherche = ref("");
-const type = ref<string | null>(null);
-const typesOuverts = ref(false);
-const limite = ref(PAR_PAGE);
+const recherche = ref('')
+const type = ref<string | null>(null)
+const typesOuverts = ref(false)
+const limite = ref(PAR_PAGE)
 
 const {
   data: tous,
   error,
   refresh,
-} = await useAsyncData("pokemon-liste", listerPokemon);
+} = await useAsyncData('pokemon-liste', listerPokemon)
 const { data: idsDuType, status: statutType } = await useAsyncData(
-  "pokemon-type",
+  'pokemon-type',
   () => (type.value ? idsParType(type.value) : Promise.resolve(null)),
   { watch: [type] },
-);
+)
 
 const resultats = computed(() => {
   // « #25 », « 25 » ou « mr mime » doivent tous marcher
   const q = recherche.value
     .trim()
     .toLowerCase()
-    .replace(/^#/, "")
-    .replace(/\s+/g, "-");
-  const ids = idsDuType.value ? new Set(idsDuType.value) : null;
+    .replace(/^#/, '')
+    .replace(/\s+/g, '-')
+  const ids = idsDuType.value ? new Set(idsDuType.value) : null
 
   return (tous.value ?? []).filter(
     (p) =>
       (!ids || ids.has(p.id)) &&
-      (!q || p.nom.includes(q) || String(p.id) === q.replace(/^0+/, "")),
-  );
-});
+      (!q || p.nom.includes(q) || String(p.id) === q.replace(/^0+/, '')),
+  )
+})
 
-const visibles = computed(() => resultats.value.slice(0, limite.value));
+const visibles = computed(() => resultats.value.slice(0, limite.value))
 
 watch([recherche, type], () => {
-  limite.value = PAR_PAGE;
-});
+  limite.value = PAR_PAGE
+})
 
 function choisirType(t: string | null) {
-  type.value = type.value === t ? null : t;
+  type.value = type.value === t ? null : t
   // On replie après un choix : le type actif reste visible seul
-  typesOuverts.value = false;
+  typesOuverts.value = false
 }
 </script>
 
@@ -64,7 +64,7 @@ function choisirType(t: string | null) {
           type="search"
           placeholder="Pikachu, #25…"
           autocomplete="off"
-        >
+        />
       </label>
 
       <div class="types">
@@ -123,7 +123,12 @@ function choisirType(t: string | null) {
       </p>
 
       <div v-if="visibles.length" class="grille-cartes">
-        <PokemonCard v-for="p in visibles" :id="p.id" :key="p.id" :nom="p.nom" />
+        <PokemonCard
+          v-for="p in visibles"
+          :id="p.id"
+          :key="p.id"
+          :nom="p.nom"
+        />
       </div>
 
       <div v-else-if="statutType !== 'pending'" class="etat-vide">
@@ -238,7 +243,7 @@ function choisirType(t: string | null) {
   transition: transform 200ms ease;
 }
 
-.types__toggle[aria-expanded="true"] svg {
+.types__toggle[aria-expanded='true'] svg {
   transform: rotate(180deg);
 }
 
@@ -281,7 +286,7 @@ function choisirType(t: string | null) {
   border-color: var(--t);
 }
 
-.types button[aria-pressed="true"] {
+.types button[aria-pressed='true'] {
   border-color: var(--t);
   background: color-mix(in oklab, var(--t) 30%, transparent);
 }
