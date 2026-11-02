@@ -1,0 +1,46 @@
+name: CI API
+
+# Ne tourne que si le back (ou ce qu'il importe) change.
+on:
+  push:
+    branches: [main]
+    paths:
+      [
+        'api/**',
+        'shared/types/**',
+        'pnpm-lock.yaml',
+        '.github/workflows/api.yml',
+      ]
+  pull_request:
+    paths:
+      [
+        'api/**',
+        'shared/types/**',
+        'pnpm-lock.yaml',
+        '.github/workflows/api.yml',
+      ]
+
+jobs:
+  api:
+    name: CI API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Uniquement les dépendances de l'API : pas besoin de Nuxt ici.
+      - run: pnpm install --frozen-lockfile --filter api
+
+      - name: TypeScript
+        run: pnpm --filter api typecheck
+
+      - name: Tests
+        run: pnpm --filter api test
