@@ -5,9 +5,15 @@ export function useFavoris() {
 
   const estFavori = (id: number) => favoris.value.some((f) => f.id === id)
   function basculer(id: number) {
-    favoris.value = estFavori(id)
-      ? favoris.value.filter((f) => f.id !== id)
-      : [...favoris.value, { id, ajouteLe: new Date().toISOString() }]
+    if (estFavori(id)) {
+      favoris.value = favoris.value.filter((f) => f.id !== id)
+      return
+    }
+    try {
+      favoris.value = addPokemon(favoris.value, id)
+    } catch {
+      // Liste pleine : on ignore le clic, pas encore de retour visuel côté UI.
+    }
   }
 
   return { favoris, pret, estFavori, basculer }
