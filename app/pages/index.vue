@@ -47,98 +47,100 @@ function choisirType(t: string | null) {
 </script>
 
 <template>
-  <section class="intro">
-    <h1>Attrapez les tous</h1>
-  </section>
+  <div>
+    <section class="intro">
+      <h1>Attrapez les tous</h1>
+    </section>
 
-  <div class="filtres">
-    <label class="recherche">
-      <span class="sr-only">Rechercher un Pokémon</span>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-3.5-3.5" />
-      </svg>
-      <input
-        v-model="recherche"
-        type="search"
-        placeholder="Pikachu, #25…"
-        autocomplete="off"
-      />
-    </label>
-
-    <div class="types">
-      <button
-        type="button"
-        class="types__toggle"
-        :aria-expanded="typesOuverts"
-        aria-controls="liste-types"
-        @click="typesOuverts = !typesOuverts"
-      >
-        Types
+    <div class="filtres">
+      <label class="recherche">
+        <span class="sr-only">Rechercher un Pokémon</span>
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m9 6 6 6-6 6" />
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
         </svg>
-      </button>
+        <input
+          v-model="recherche"
+          type="search"
+          placeholder="Pikachu, #25…"
+          autocomplete="off"
+        >
+      </label>
 
-      <div
-        id="liste-types"
-        class="types__liste"
-        role="group"
-        aria-label="Filtrer par type"
-      >
+      <div class="types">
         <button
-          v-show="typesOuverts"
           type="button"
-          :aria-pressed="type === null"
-          @click="choisirType(null)"
+          class="types__toggle"
+          :aria-expanded="typesOuverts"
+          aria-controls="liste-types"
+          @click="typesOuverts = !typesOuverts"
         >
-          Tous
+          Types
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" />
+          </svg>
         </button>
-        <button
-          v-for="(label, cle, i) in TYPES"
-          v-show="typesOuverts || type === cle"
-          :key="cle"
-          type="button"
-          :aria-pressed="type === cle"
-          :style="{ '--t': `var(--type-${cle})`, '--i': i + 1 }"
-          @click="choisirType(cle)"
+
+        <div
+          id="liste-types"
+          class="types__liste"
+          role="group"
+          aria-label="Filtrer par type"
         >
-          {{ label }}
-        </button>
+          <button
+            v-show="typesOuverts"
+            type="button"
+            :aria-pressed="type === null"
+            @click="choisirType(null)"
+          >
+            Tous
+          </button>
+          <button
+            v-for="(label, cle, i) in TYPES"
+            v-show="typesOuverts || type === cle"
+            :key="cle"
+            type="button"
+            :aria-pressed="type === cle"
+            :style="{ '--t': `var(--type-${cle})`, '--i': i + 1 }"
+            @click="choisirType(cle)"
+          >
+            {{ label }}
+          </button>
+        </div>
       </div>
     </div>
+
+    <div v-if="error" class="etat-vide">
+      <strong>PokéAPI ne répond pas.</strong>
+      <p>Vérifie ta connexion, puis réessaie.</p>
+      <button type="button" class="bouton" @click="refresh()">Réessayer</button>
+    </div>
+
+    <template v-else>
+      <p class="compteur" aria-live="polite">
+        <template v-if="statutType === 'pending'">Chargement…</template>
+        <template v-else>{{ resultats.length }} Pokémon</template>
+      </p>
+
+      <div v-if="visibles.length" class="grille-cartes">
+        <PokemonCard v-for="p in visibles" :id="p.id" :key="p.id" :nom="p.nom" />
+      </div>
+
+      <div v-else-if="statutType !== 'pending'" class="etat-vide">
+        <strong>Aucun Pokémon ne correspond.</strong>
+        <p>Essaie un autre nom, ou retire le filtre de type.</p>
+      </div>
+
+      <div v-if="resultats.length > limite" class="plus">
+        <button type="button" class="bouton" @click="limite += PAR_PAGE">
+          Voir plus
+          <span class="plus__restant"
+            >{{ resultats.length - limite }} restants</span
+          >
+        </button>
+      </div>
+    </template>
   </div>
-
-  <div v-if="error" class="etat-vide">
-    <strong>PokéAPI ne répond pas.</strong>
-    <p>Vérifie ta connexion, puis réessaie.</p>
-    <button type="button" class="bouton" @click="refresh()">Réessayer</button>
-  </div>
-
-  <template v-else>
-    <p class="compteur" aria-live="polite">
-      <template v-if="statutType === 'pending'">Chargement…</template>
-      <template v-else>{{ resultats.length }} Pokémon</template>
-    </p>
-
-    <div v-if="visibles.length" class="grille-cartes">
-      <PokemonCard v-for="p in visibles" :id="p.id" :key="p.id" :nom="p.nom" />
-    </div>
-
-    <div v-else-if="statutType !== 'pending'" class="etat-vide">
-      <strong>Aucun Pokémon ne correspond.</strong>
-      <p>Essaie un autre nom, ou retire le filtre de type.</p>
-    </div>
-
-    <div v-if="resultats.length > limite" class="plus">
-      <button type="button" class="bouton" @click="limite += PAR_PAGE">
-        Voir plus
-        <span class="plus__restant"
-          >{{ resultats.length - limite }} restants</span
-        >
-      </button>
-    </div>
-  </template>
 </template>
 
 <style scoped>

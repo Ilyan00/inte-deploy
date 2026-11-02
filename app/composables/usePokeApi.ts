@@ -65,15 +65,25 @@ export async function idsParType(type: string): Promise<number[]> {
   return res.pokemon.map((p) => idDepuisUrl(p.pokemon.url)).filter((id) => id <= NB_POKEMON)
 }
 
+// Sous-ensemble de la réponse /pokemon/:id, limité aux champs qu'on lit.
+interface PokemonBrut {
+  id: number
+  name: string
+  height: number
+  weight: number
+  types: { type: { name: string } }[]
+  stats: { base_stat: number; stat: { name: string } }[]
+}
+
 export async function recupererPokemon(id: number): Promise<Pokemon> {
-  const p = await $fetch<any>(`${API}/pokemon/${id}`)
-  const stat = (nom: string) => p.stats.find((s: any) => s.stat.name === nom)?.base_stat ?? 0
+  const p = await $fetch<PokemonBrut>(`${API}/pokemon/${id}`)
+  const stat = (nom: string) => p.stats.find((s) => s.stat.name === nom)?.base_stat ?? 0
 
   // On ne garde que ce qu'affiche la carte : la réponse brute pèse ~300 Ko par Pokémon.
   return {
     id: p.id,
     nom: p.name,
-    types: p.types.map((t: any) => t.type.name),
+    types: p.types.map((t) => t.type.name),
     pv: stat('hp'),
     attaque: stat('attack'),
     defense: stat('defense'),

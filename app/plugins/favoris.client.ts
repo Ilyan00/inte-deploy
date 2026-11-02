@@ -19,7 +19,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     watch(favoris, (valeur) => {
       try {
         localStorage.setItem(CLE, JSON.stringify(valeur))
-      } catch {}
+      } catch {
+        // Quota dépassé ou stockage bloqué : les favoris restent en mémoire pour la session.
+      }
     })
   })
 })

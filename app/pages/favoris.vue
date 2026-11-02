@@ -5,31 +5,33 @@ const { favoris, pret } = useFavoris();
 </script>
 
 <template>
-  <section class="intro">
-    <h1>Mon classeur</h1>
-    <p v-if="pret && favoris.length">
-      {{ favoris.length }} carte{{ favoris.length > 1 ? "s" : "" }} rangée{{
-        favoris.length > 1 ? "s" : ""
-      }}. Clique à nouveau sur l'étoile pour en retirer une.
-    </p>
-  </section>
+  <div>
+    <section class="intro">
+      <h1>Mon classeur</h1>
+      <p v-if="pret && favoris.length">
+        {{ favoris.length }} carte{{ favoris.length > 1 ? "s" : "" }} rangée{{
+          favoris.length > 1 ? "s" : ""
+        }}. Clique à nouveau sur l'étoile pour en retirer une.
+      </p>
+    </section>
 
-  <template v-if="pret">
-    <TransitionGroup
-      v-if="favoris.length"
-      tag="div"
-      name="carte"
-      class="grille-cartes"
-    >
-      <PokemonCard v-for="id in favoris" :id="id" :key="id" />
-    </TransitionGroup>
+    <template v-if="pret">
+      <TransitionGroup
+        v-if="favoris.length"
+        tag="div"
+        name="carte"
+        class="grille-cartes"
+      >
+        <PokemonCard v-for="id in favoris" :id="id" :key="id" />
+      </TransitionGroup>
 
-    <div v-else class="etat-vide">
-      <strong>Ton classeur est vide.</strong>
-      <p>Clique sur l'étoile d'une carte pour l'ajouter ici.</p>
-      <NuxtLink to="/" class="bouton">Parcourir la collection</NuxtLink>
-    </div>
-  </template>
+      <div v-else class="etat-vide">
+        <strong>Ton classeur est vide.</strong>
+        <p>Clique sur l'étoile d'une carte pour l'ajouter ici.</p>
+        <NuxtLink to="/" class="bouton">Parcourir la collection</NuxtLink>
+      </div>
+    </template>
+  </div>
 </template>
 
 <style scoped>

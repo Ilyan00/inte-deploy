@@ -58,7 +58,7 @@ function relacher() {
     </header>
 
     <div class="carte__fenetre">
-      <img :src="imagePokemon(id)" :alt="nom" width="475" height="475" loading="lazy" decoding="async" />
+      <img :src="imagePokemon(id)" :alt="nom" width="475" height="475" loading="lazy" decoding="async" >
       <button
         type="button"
         class="carte__fav"
