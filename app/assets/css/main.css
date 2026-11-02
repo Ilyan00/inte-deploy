@@ -1,0 +1,127 @@
+:root {
+  --fond: #14110f;
+  --surface: #1f1a17;
+  --surface-haute: #2a2420;
+  --bord: #3a322c;
+  --texte: #f3ebe0;
+  --texte-doux: #a39686;
+  --or: #e8b04b;
+
+  --titre: 'Bricolage Grotesque', system-ui, sans-serif;
+  --mono: 'DM Mono', ui-monospace, monospace;
+
+  --type-normal: #a8a77a;
+  --type-fire: #ee8130;
+  --type-water: #6390f0;
+  --type-grass: #7ac74c;
+  --type-electric: #f7d02c;
+  --type-ice: #96d9d6;
+  --type-fighting: #c22e28;
+  --type-poison: #a33ea1;
+  --type-ground: #e2bf65;
+  --type-flying: #a98ff3;
+  --type-psychic: #f95587;
+  --type-bug: #a6b91a;
+  --type-rock: #b6a136;
+  --type-ghost: #735797;
+  --type-dragon: #6f35fc;
+  --type-dark: #705746;
+  --type-steel: #b7b7ce;
+  --type-fairy: #d685ad;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--titre);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgb(232 176 75 / 0.12), transparent),
+    var(--fond);
+  color: var(--texte);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--or);
+  outline-offset: 2px;
+}
+
+.conteneur {
+  width: min(100% - 2rem, 1240px);
+  margin-inline: auto;
+}
+
+.grille-cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 520px) {
+  .grille-cartes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+.etat-vide {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--texte-doux);
+}
+
+.etat-vide strong {
+  font-size: 1.25rem;
+  color: var(--texte);
+}
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.3rem;
+  border: 1px solid var(--bord);
+  border-radius: 99px;
+  background: var(--surface-haute);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 200ms ease,
+    transform 160ms ease;
+}
+
+.bouton:hover {
+  border-color: var(--or);
+}
+
+.bouton:active {
+  transform: scale(0.97);
+}
