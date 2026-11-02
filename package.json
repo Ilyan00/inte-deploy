@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "concurrently -k -n front,api -c blue,green \"nuxt dev\" \"pnpm --filter api dev\"",
+    "dev:front": "nuxt dev",
+    "dev:api": "pnpm --filter api dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -24,6 +26,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "concurrently": "^10.0.6",
     "ofetch": "1.5.1",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5",
