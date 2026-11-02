@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     // Surchargé en prod par NUXT_PUBLIC_API_URL
-    public: { apiUrl: 'http://localhost:3001' },
+    public: { apiUrl: 'http://localhost:3333' },
   },
   app: {
     head: {
