@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { WishlistItem } from '../../shared/types/pokemon'
 import {
   addPokemon,
@@ -8,43 +9,103 @@ import {
   validerId,
 } from './wishlist'
 
-// Pas de BDD pour l'instant : stockage en mémoire, perdu à chaque redémarrage.
-let wishlist: WishlistItem[] = []
+interface LigneWishlist {
+  pokemon_id: number
+  ajoute_le: string
+}
 
-export const app = new Hono()
-
-// Le navigateur appelle l'API depuis l'origine du front Nuxt.
-app.use('*', cors({ origin: process.env.FRONT_URL ?? 'http://localhost:3000' }))
-
-app.get('/health', (c) => c.json({ status: 'ok' }))
-
-app.get('/wishlist', (c) => c.json(wishlist))
-
-app.post('/wishlist', async (c) => {
-  // Corps absent ou JSON cassé : même réponse 400 qu'un id invalide.
-  const corps = await c.req.json<{ id?: unknown }>().catch(() => null)
-  const id = validerId(corps?.id)
-  wishlist = addPokemon(wishlist, id)
-  return c.json(
-    wishlist.find((item) => item.id === id),
-    201,
-  )
+// Le front attend toujours le format WishlistItem : la BDD reste un détail interne.
+const versItem = (ligne: LigneWishlist): WishlistItem => ({
+  id: ligne.pokemon_id,
+  ajouteLe: new Date(ligne.ajoute_le).toISOString(),
 })
 
-app.delete('/wishlist/:id', (c) => {
-  const id = validerId(Number(c.req.param('id')))
-  const item = wishlist.find((i) => i.id === id)
-  wishlist = removePokemon(wishlist, id)
-  return c.json(item)
-})
+// Les erreurs Supabase sont des objets simples : Hono ne passe à onError que des
+// vraies Error et relance le reste, d'où l'emballage.
+function erreurBdd(error: { message: string }): Error {
+  return new Error(`Supabase : ${error.message}`, { cause: error })
+}
 
-// Les règles métier lèvent une ErreurWishlist : on la traduit en réponse HTTP ici,
-// une seule fois, plutôt qu'un try/catch par route.
-app.onError((err, c) => {
-  if (err instanceof ErreurWishlist) {
-    return c.json({ erreur: err.message }, err.status)
+// Le client est injecté pour que les tests puissent viser la base locale.
+export function creerApp(supabase: SupabaseClient) {
+  const app = new Hono()
+
+  async function lireWishlist(): Promise<WishlistItem[]> {
+    const { data, error } = await supabase
+      .from('wishlist')
+      .select('pokemon_id, ajoute_le')
+      .order('ajoute_le')
+    if (error) throw erreurBdd(error)
+    return (data as LigneWishlist[]).map(versItem)
   }
-  return c.json({ erreur: 'Erreur interne' }, 500)
-})
 
-app.notFound((c) => c.json({ erreur: 'Route introuvable' }, 404))
+  // Le navigateur appelle l'API depuis l'origine du front Nuxt.
+  app.use(
+    '*',
+    cors({ origin: process.env.FRONT_URL ?? 'http://localhost:3000' }),
+  )
+
+  app.get('/health', (c) => c.json({ status: 'ok' }))
+
+  app.get('/wishlist', async (c) => c.json(await lireWishlist()))
+
+  app.post('/wishlist', async (c) => {
+    // Corps absent ou JSON cassé : même réponse 400 qu'un id invalide.
+    const corps = await c.req.json<{ id?: unknown }>().catch(() => null)
+    const id = validerId(corps?.id)
+
+    // Les règles (6 max, doublon ignoré) restent dans wishlist.ts :
+    // on les applique sur l'état lu en base, puis on écrit seulement si besoin.
+    // addPokemon renvoie la même liste pour un doublon et lève une erreur si elle est pleine.
+    const liste = await lireWishlist()
+    if (addPokemon(liste, id) === liste) {
+      return c.json(
+        liste.find((item) => item.id === id),
+        201,
+      )
+    }
+
+    const { data, error } = await supabase
+      .from('wishlist')
+      .insert({ pokemon_id: id })
+      .select('pokemon_id, ajoute_le')
+      .single()
+    // 23505 = la PK a bloqué un doublon arrivé en même temps : même effet qu'un double-clic.
+    if (error?.code === '23505') {
+      const item = (await lireWishlist()).find((i) => i.id === id)
+      return c.json(item, 201)
+    }
+    if (error) throw erreurBdd(error)
+    return c.json(versItem(data as LigneWishlist), 201)
+  })
+
+  app.delete('/wishlist/:id', async (c) => {
+    const id = validerId(Number(c.req.param('id')))
+    const liste = await lireWishlist()
+    // Lève la 404 si le pokémon est absent.
+    removePokemon(liste, id)
+
+    const { error } = await supabase
+      .from('wishlist')
+      .delete()
+      .eq('pokemon_id', id)
+    if (error) throw erreurBdd(error)
+    return c.json(liste.find((item) => item.id === id))
+  })
+
+  // Les règles métier lèvent une ErreurWishlist : on la traduit en réponse HTTP ici,
+  // une seule fois, plutôt qu'un try/catch par route.
+  app.onError((err, c) => {
+    if (err instanceof ErreurWishlist) {
+      return c.json({ erreur: err.message }, err.status)
+    }
+    // Erreur BDD ou bug : on la trace côté serveur, le client n'a pas à voir le détail.
+    // eslint-disable-next-line no-console -- seule trace d'une erreur serveur
+    console.error(err)
+    return c.json({ erreur: 'Erreur interne' }, 500)
+  })
+
+  app.notFound((c) => c.json({ erreur: 'Route introuvable' }, 404))
+
+  return app
+}

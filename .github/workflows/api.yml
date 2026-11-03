@@ -8,6 +8,7 @@ on:
       [
         'api/**',
         'shared/types/**',
+        'supabase/**',
         'pnpm-lock.yaml',
         '.github/workflows/api.yml',
       ]
@@ -16,6 +17,7 @@ on:
       [
         'api/**',
         'shared/types/**',
+        'supabase/**',
         'pnpm-lock.yaml',
         '.github/workflows/api.yml',
       ]
@@ -42,9 +44,13 @@ jobs:
       - name: TypeScript
         run: pnpm --filter api typecheck
 
+      # Base de test jetable : la même migration que le cloud, détruite avec le runner.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase local
+        run: supabase start -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api
+
       - name: Tests
         run: pnpm --filter api test
-        # Sans ces secrets, le test de connexion BDD est simplement sauté.
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
