@@ -44,13 +44,18 @@ jobs:
       - name: TypeScript
         run: pnpm --filter api typecheck
 
-      # Base de test jetable : la même migration que le cloud, détruite avec le runner.
+      # Base de test jetable, migrée par le même runner que le cloud, détruite avec le runner.
       - uses: supabase/setup-cli@v1
         with:
           version: latest
 
       - name: Supabase local
         run: supabase start -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api
+
+      - name: Migrations
+        run: pnpm --filter api db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Tests
         run: pnpm --filter api test
@@ -83,6 +88,13 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile --filter api
+
+      # Le schéma passe avant le code : la nouvelle Lambda peut compter sur ses tables.
+      # En cas d'échec le job s'arrête et l'ancienne Lambda reste en place.
+      - name: Migrations BDD
+        run: pnpm --filter api db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build du zip
         run: pnpm --filter api build:lambda

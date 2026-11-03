@@ -8,6 +8,7 @@ export default defineConfig({
     env: {
       SUPABASE_URL: 'http://127.0.0.1:54321',
       SUPABASE_KEY: 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH',
+      DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
     },
     // Les fichiers partagent la même table : on les lance l'un après l'autre.
     fileParallelism: false,
