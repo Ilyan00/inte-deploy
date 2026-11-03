@@ -42,3 +42,35 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  deploiement:
+    name: Déploiement Vercel
+    # Vercel ne déploie plus seul (vercel.json) : c'est la CI verte qui décide.
+    needs: lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency: deploiement-vercel
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: npm install -g vercel@61.0.0
+
+      # Récupère les réglages et les variables de prod (NUXT_PUBLIC_API_URL…) du projet Vercel.
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Build sur le runner puis upload du résultat : c'est le code testé juste avant qui part.
+      - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
