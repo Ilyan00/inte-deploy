@@ -44,3 +44,7 @@ jobs:
 
       - name: Tests
         run: pnpm --filter api test
+        # Sans ces secrets, le test de connexion BDD est simplement sauté.
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
