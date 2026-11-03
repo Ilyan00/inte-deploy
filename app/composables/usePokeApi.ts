@@ -64,14 +64,19 @@ interface PokemonBrut {
   weight: number
   types: { type: { name: TypePokemon } }[]
   stats: { base_stat: number; stat: { name: string } }[]
+  abilities: { ability: { name: string }; is_hidden: boolean }[]
 }
 
-export async function recupererPokemon(id: number): Promise<Pokemon> {
-  const p = await $fetch<PokemonBrut>(`${API}/pokemon/${id}`)
+// PokéAPI accepte indifféremment l'id ou le nom (en minuscules) : /pokemon/25 ou /pokemon/pikachu.
+export async function recupererPokemon(
+  idOuNom: number | string,
+): Promise<Pokemon> {
+  const cle = encodeURIComponent(String(idOuNom).toLowerCase())
+  const p = await $fetch<PokemonBrut>(`${API}/pokemon/${cle}`)
   const stat = (nom: string) =>
     p.stats.find((s) => s.stat.name === nom)?.base_stat ?? 0
 
-  // On ne garde que ce qu'affiche la carte : la réponse brute pèse ~300 Ko par Pokémon.
+  // On ne garde que ce qu'affichent la carte et la fiche : la réponse brute pèse ~300 Ko par Pokémon.
   return {
     id: p.id,
     nom: p.name,
@@ -79,8 +84,14 @@ export async function recupererPokemon(id: number): Promise<Pokemon> {
     pv: stat('hp'),
     attaque: stat('attack'),
     defense: stat('defense'),
+    attaqueSpe: stat('special-attack'),
+    defenseSpe: stat('special-defense'),
     vitesse: stat('speed'),
     taille: p.height / 10,
     poids: p.weight / 10,
+    talents: p.abilities.map((a) => ({
+      nom: a.ability.name,
+      cache: a.is_hidden,
+    })),
   }
 }

@@ -57,7 +57,11 @@ function relacher() {
     @pointerleave="relacher"
   >
     <header class="carte__tete">
-      <h3 class="carte__nom">{{ nom }}</h3>
+      <h3 class="carte__nom">
+        <NuxtLink :to="`/pokemon/${id}`" class="carte__lien">{{
+          nom
+        }}</NuxtLink>
+      </h3>
       <p v-if="pokemon" class="carte__pv"><small>PV</small>{{ pokemon.pv }}</p>
     </header>
 
@@ -218,6 +222,19 @@ function relacher() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.carte__lien {
+  text-decoration: none;
+}
+
+/* Lien étiré sur toute la carte ; le bouton favori (z-index 3) reste cliquable au-dessus */
+.carte__lien::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
 }
 
 .carte__pv {

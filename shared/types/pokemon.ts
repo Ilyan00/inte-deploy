@@ -31,9 +31,12 @@ export interface Pokemon {
   pv: number
   attaque: number
   defense: number
+  attaqueSpe: number
+  defenseSpe: number
   vitesse: number
   taille: number // en mètres
   poids: number // en kg
+  talents: { nom: string; cache: boolean }[]
 }
 
 export interface WishlistItem {

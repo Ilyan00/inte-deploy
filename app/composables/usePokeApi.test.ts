@@ -37,7 +37,13 @@ describe('recupererPokemon', () => {
             { base_stat: 35, stat: { name: 'hp' } },
             { base_stat: 55, stat: { name: 'attack' } },
             { base_stat: 40, stat: { name: 'defense' } },
+            { base_stat: 50, stat: { name: 'special-attack' } },
+            { base_stat: 50, stat: { name: 'special-defense' } },
             { base_stat: 90, stat: { name: 'speed' } },
+          ],
+          abilities: [
+            { ability: { name: 'static' }, is_hidden: false },
+            { ability: { name: 'lightning-rod' }, is_hidden: true },
           ],
         },
         200,
@@ -57,10 +63,26 @@ describe('recupererPokemon', () => {
       pv: 35,
       attaque: 55,
       defense: 40,
+      attaqueSpe: 50,
+      defenseSpe: 50,
       vitesse: 90,
       taille: 0.4,
       poids: 6,
+      talents: [
+        { nom: 'static', cache: false },
+        { nom: 'lightning-rod', cache: true },
+      ],
     })
+  })
+
+  it("accepte un nom (normalisé en minuscules) à la place de l'id", async () => {
+    fetchMock.mockResolvedValueOnce(new Response('Not Found', { status: 404 }))
+
+    await recupererPokemon('Pikachu').catch(() => {})
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'https://pokeapi.co/api/v2/pokemon/pikachu',
+    )
   })
 
   it('rejette quand le Pokémon est introuvable (404)', async () => {
