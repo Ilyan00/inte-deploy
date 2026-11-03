@@ -1,11 +1,13 @@
 <script setup lang="ts">
 const route = useRoute()
+const { t } = useI18n()
+const localePath = useLocalePath()
 const param = String(route.params.id).toLowerCase()
 
 const introuvable = () =>
   createError({
     statusCode: 404,
-    message: 'Pokémon introuvable',
+    message: t('fiche.introuvable'),
     fatal: true,
   })
 
@@ -36,12 +38,12 @@ const stats = computed(() => {
   const p = pokemon.value
   if (!p) return []
   return [
-    { label: 'PV', valeur: p.pv },
-    { label: 'Attaque', valeur: p.attaque },
-    { label: 'Défense', valeur: p.defense },
-    { label: 'Atq. Spé', valeur: p.attaqueSpe },
-    { label: 'Déf. Spé', valeur: p.defenseSpe },
-    { label: 'Vitesse', valeur: p.vitesse },
+    { label: t('stats.pv'), valeur: p.pv },
+    { label: t('stats.attaque'), valeur: p.attaque },
+    { label: t('stats.defense'), valeur: p.defense },
+    { label: t('stats.attaqueSpe'), valeur: p.attaqueSpe },
+    { label: t('stats.defenseSpe'), valeur: p.defenseSpe },
+    { label: t('stats.vitesse'), valeur: p.vitesse },
   ]
 })
 const total = computed(() => stats.value.reduce((s, x) => s + x.valeur, 0))
@@ -60,13 +62,17 @@ const suivant = computed(() =>
 <template>
   <div>
     <div v-if="error" class="etat-vide">
-      <strong>PokéAPI ne répond pas.</strong>
-      <p>Vérifie ta connexion, puis réessaie.</p>
-      <button type="button" class="bouton" @click="refresh()">Réessayer</button>
+      <strong>{{ t('commun.apiHs') }}</strong>
+      <p>{{ t('commun.apiHsAide') }}</p>
+      <button type="button" class="bouton" @click="refresh()">
+        {{ t('commun.reessayer') }}
+      </button>
     </div>
 
     <article v-else-if="pokemon" class="fiche" :style="{ '--c': couleur }">
-      <NuxtLink to="/" class="fiche__retour">← Collection</NuxtLink>
+      <NuxtLink :to="localePath('/')" class="fiche__retour">{{
+        t('fiche.retour')
+      }}</NuxtLink>
 
       <div class="fiche__grille">
         <div class="fiche__visuel">
@@ -81,7 +87,11 @@ const suivant = computed(() =>
 
         <div class="fiche__infos">
           <p class="fiche__numero">
-            N° {{ String(pokemon.id).padStart(4, '0') }}
+            {{
+              t('commun.numero', {
+                numero: String(pokemon.id).padStart(4, '0'),
+              })
+            }}
           </p>
           <h1>{{ nom }}</h1>
 
@@ -91,31 +101,32 @@ const suivant = computed(() =>
               :key="type"
               :style="{ '--t': `var(--type-${type})` }"
             >
-              {{ TYPES[type] ?? type }}
+              {{ t(`types.${type}`) }}
             </li>
           </ul>
 
           <dl class="fiche__mesures">
             <div>
-              <dt>Taille</dt>
+              <dt>{{ t('fiche.taille') }}</dt>
               <dd>{{ pokemon.taille }} m</dd>
             </div>
             <div>
-              <dt>Poids</dt>
+              <dt>{{ t('fiche.poids') }}</dt>
               <dd>{{ pokemon.poids }} kg</dd>
             </div>
             <div>
-              <dt>Talents</dt>
+              <dt>{{ t('fiche.talents') }}</dt>
               <dd>
-                <span v-for="t in pokemon.talents" :key="t.nom">
-                  {{ formaterNom(t.nom) }}<small v-if="t.cache"> (caché)</small>
+                <span v-for="talent in pokemon.talents" :key="talent.nom">
+                  {{ formaterNom(talent.nom)
+                  }}<small v-if="talent.cache"> {{ t('fiche.cache') }}</small>
                 </span>
               </dd>
             </div>
           </dl>
 
           <section aria-labelledby="titre-stats">
-            <h2 id="titre-stats">Stats de base</h2>
+            <h2 id="titre-stats">{{ t('fiche.statsDeBase') }}</h2>
             <dl class="fiche__stats">
               <div v-for="stat in stats" :key="stat.label">
                 <dt>{{ stat.label }}</dt>
@@ -130,7 +141,7 @@ const suivant = computed(() =>
                 </dd>
               </div>
               <div class="fiche__total">
-                <dt>Total</dt>
+                <dt>{{ t('fiche.total') }}</dt>
                 <dd>{{ total }}</dd>
               </div>
             </dl>
@@ -143,20 +154,34 @@ const suivant = computed(() =>
             @click="basculer(pokemon.id)"
           >
             {{
-              estFavori(pokemon.id)
-                ? '★ Dans mon classeur'
-                : '☆ Ajouter au classeur'
+              t(
+                estFavori(pokemon.id)
+                  ? 'fiche.dansClasseur'
+                  : 'fiche.ajouterClasseur',
+              )
             }}
           </button>
         </div>
       </div>
 
-      <nav class="fiche__voisins" aria-label="Pokémon voisins">
-        <NuxtLink v-if="precedent" :to="`/pokemon/${precedent}`" class="bouton">
-          ← N° {{ String(precedent).padStart(4, '0') }}
+      <nav class="fiche__voisins" :aria-label="t('fiche.voisins')">
+        <NuxtLink
+          v-if="precedent"
+          :to="localePath(`/pokemon/${precedent}`)"
+          class="bouton"
+        >
+          ←
+          {{
+            t('commun.numero', { numero: String(precedent).padStart(4, '0') })
+          }}
         </NuxtLink>
-        <NuxtLink v-if="suivant" :to="`/pokemon/${suivant}`" class="bouton">
-          N° {{ String(suivant).padStart(4, '0') }} →
+        <NuxtLink
+          v-if="suivant"
+          :to="localePath(`/pokemon/${suivant}`)"
+          class="bouton"
+        >
+          {{ t('commun.numero', { numero: String(suivant).padStart(4, '0') }) }}
+          →
         </NuxtLink>
       </nav>
     </article>

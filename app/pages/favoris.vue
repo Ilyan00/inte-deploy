@@ -1,5 +1,7 @@
 <script setup lang="ts">
-useHead({ title: 'Mes favoris · PokéGang' })
+const { t } = useI18n()
+const localePath = useLocalePath()
+useHead({ title: () => `${t('favoris.titreOnglet')} · PokéGang` })
 
 const { favoris, pret } = useFavoris()
 </script>
@@ -7,11 +9,10 @@ const { favoris, pret } = useFavoris()
 <template>
   <div>
     <section class="intro">
-      <h1>Mon classeur</h1>
+      <h1>{{ t('favoris.titre') }}</h1>
       <p v-if="pret && favoris.length">
-        {{ favoris.length }} carte{{ favoris.length > 1 ? 's' : '' }} rangée{{
-          favoris.length > 1 ? 's' : ''
-        }}. Clique à nouveau sur l'étoile pour en retirer une.
+        {{ t('favoris.compteur', favoris.length) }}
+        {{ t('favoris.aide') }}
       </p>
     </section>
 
@@ -26,9 +27,11 @@ const { favoris, pret } = useFavoris()
       </TransitionGroup>
 
       <div v-else class="etat-vide">
-        <strong>Ton classeur est vide.</strong>
-        <p>Clique sur l'étoile d'une carte pour l'ajouter ici.</p>
-        <NuxtLink to="/" class="bouton">Parcourir la collection</NuxtLink>
+        <strong>{{ t('favoris.vide') }}</strong>
+        <p>{{ t('favoris.videAide') }}</p>
+        <NuxtLink :to="localePath('/')" class="bouton">{{
+          t('favoris.parcourir')
+        }}</NuxtLink>
       </div>
     </template>
   </div>

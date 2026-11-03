@@ -1,4 +1,4 @@
-// Noms des types tels que renvoyés par PokéAPI (les libellés FR sont dans TYPES, usePokeApi.ts).
+// Noms des types tels que renvoyés par PokéAPI (libellés traduits dans i18n/locales, clés types.*).
 export type TypePokemon =
   | 'normal'
   | 'fire'

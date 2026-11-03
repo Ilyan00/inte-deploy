@@ -1,0 +1,9 @@
+{
+  "erreurs": {
+    "idInvalide": "id no válido",
+    "wishlistPleine": "Lista de deseos llena ({max} máx.)",
+    "absentDeWishlist": "Pokémon ausente de la lista de deseos",
+    "interne": "Error interno",
+    "routeIntrouvable": "Ruta no encontrada"
+  }
+}

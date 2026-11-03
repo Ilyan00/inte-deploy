@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { WishlistItem } from '../../shared/types/pokemon'
+import { detecterLangue, t } from './i18n'
 import {
   addPokemon,
   ErreurWishlist,
@@ -96,16 +97,20 @@ export function creerApp(supabase: SupabaseClient) {
   // Les règles métier lèvent une ErreurWishlist : on la traduit en réponse HTTP ici,
   // une seule fois, plutôt qu'un try/catch par route.
   app.onError((err, c) => {
+    const langue = detecterLangue(c.req.header('Accept-Language'))
     if (err instanceof ErreurWishlist) {
-      return c.json({ erreur: err.message }, err.status)
+      return c.json({ erreur: t(langue, err.cle, err.params) }, err.status)
     }
     // Erreur BDD ou bug : on la trace côté serveur, le client n'a pas à voir le détail.
     // eslint-disable-next-line no-console -- seule trace d'une erreur serveur
     console.error(err)
-    return c.json({ erreur: 'Erreur interne' }, 500)
+    return c.json({ erreur: t(langue, 'erreurs.interne') }, 500)
   })
 
-  app.notFound((c) => c.json({ erreur: 'Route introuvable' }, 404))
+  app.notFound((c) => {
+    const langue = detecterLangue(c.req.header('Accept-Language'))
+    return c.json({ erreur: t(langue, 'erreurs.routeIntrouvable') }, 404)
+  })
 
   return app
 }

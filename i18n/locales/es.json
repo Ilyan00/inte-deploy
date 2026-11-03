@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "description": "Explora los 1025 Pokémon en forma de cartas y guarda tus favoritos en tu álbum."
+  },
+  "nav": {
+    "principale": "Navegación principal",
+    "collection": "Colección",
+    "favoris": "Favoritos",
+    "langue": "Idioma"
+  },
+  "pied": {
+    "donnees": "Datos de",
+    "copyright": "Pokémon © Nintendo / Game Freak."
+  },
+  "commun": {
+    "apiHs": "PokéAPI no responde.",
+    "apiHsAide": "Comprueba tu conexión y vuelve a intentarlo.",
+    "reessayer": "Reintentar",
+    "numero": "N.º {numero}"
+  },
+  "accueil": {
+    "titre": "Hazte con todos",
+    "rechercher": "Buscar un Pokémon",
+    "placeholder": "Pikachu, #25…",
+    "types": "Tipos",
+    "filtrerParType": "Filtrar por tipo",
+    "tous": "Todos",
+    "chargement": "Cargando…",
+    "compteur": "{n} Pokémon",
+    "aucunResultat": "Ningún Pokémon coincide.",
+    "aucunResultatAide": "Prueba otro nombre o quita el filtro de tipo.",
+    "voirPlus": "Ver más",
+    "restants": "{n} restante | {n} restantes"
+  },
+  "favoris": {
+    "titreOnglet": "Mis favoritos",
+    "titre": "Mi álbum",
+    "compteur": "{n} carta guardada. | {n} cartas guardadas.",
+    "aide": "Vuelve a pulsar la estrella para quitar una.",
+    "vide": "Tu álbum está vacío.",
+    "videAide": "Pulsa la estrella de una carta para añadirla aquí.",
+    "parcourir": "Explorar la colección"
+  },
+  "carte": {
+    "ajouter": "Añadir {nom} a favoritos",
+    "retirer": "Quitar {nom} de favoritos"
+  },
+  "fiche": {
+    "retour": "← Colección",
+    "taille": "Altura",
+    "poids": "Peso",
+    "talents": "Habilidades",
+    "cache": "(oculta)",
+    "statsDeBase": "Estadísticas base",
+    "total": "Total",
+    "dansClasseur": "★ En mi álbum",
+    "ajouterClasseur": "☆ Añadir al álbum",
+    "voisins": "Pokémon vecinos",
+    "introuvable": "Pokémon no encontrado"
+  },
+  "stats": {
+    "pv": "PS",
+    "attaque": "Ataque",
+    "defense": "Defensa",
+    "attaqueSpe": "At. Esp.",
+    "defenseSpe": "Def. Esp.",
+    "vitesse": "Velocidad"
+  },
+  "erreur": {
+    "titreIntrouvable": "No encontrado",
+    "titreErreur": "Error",
+    "introuvable": "Este Pokémon no existe.",
+    "introuvableAide": "Comprueba el nombre o el número en la dirección (p. ej. /pokemon/25).",
+    "generique": "Algo ha salido mal.",
+    "generiqueAide": "Inténtalo de nuevo en un momento.",
+    "retour": "Volver a la colección"
+  },
+  "types": {
+    "normal": "Normal",
+    "fire": "Fuego",
+    "water": "Agua",
+    "grass": "Planta",
+    "electric": "Eléctrico",
+    "ice": "Hielo",
+    "fighting": "Lucha",
+    "poison": "Veneno",
+    "ground": "Tierra",
+    "flying": "Volador",
+    "psychic": "Psíquico",
+    "bug": "Bicho",
+    "rock": "Roca",
+    "ghost": "Fantasma",
+    "dragon": "Dragón",
+    "dark": "Siniestro",
+    "steel": "Acero",
+    "fairy": "Hada"
+  }
+}

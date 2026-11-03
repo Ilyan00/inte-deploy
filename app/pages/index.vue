@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const PAR_PAGE = 24
+const { t } = useI18n()
 
 const recherche = ref('')
 const type = ref<TypePokemon | null>(null)
@@ -49,12 +50,12 @@ function choisirType(t: TypePokemon | null) {
 <template>
   <div>
     <section class="intro">
-      <h1>Attrapez les tous</h1>
+      <h1>{{ t('accueil.titre') }}</h1>
     </section>
 
     <div class="filtres">
       <label class="recherche">
-        <span class="sr-only">Rechercher un Pokémon</span>
+        <span class="sr-only">{{ t('accueil.rechercher') }}</span>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
@@ -62,7 +63,7 @@ function choisirType(t: TypePokemon | null) {
         <input
           v-model="recherche"
           type="search"
-          placeholder="Pikachu, #25…"
+          :placeholder="t('accueil.placeholder')"
           autocomplete="off"
         />
       </label>
@@ -75,7 +76,7 @@ function choisirType(t: TypePokemon | null) {
           aria-controls="liste-types"
           @click="typesOuverts = !typesOuverts"
         >
-          Types
+          {{ t('accueil.types') }}
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="m9 6 6 6-6 6" />
           </svg>
@@ -85,7 +86,7 @@ function choisirType(t: TypePokemon | null) {
           id="liste-types"
           class="types__liste"
           role="group"
-          aria-label="Filtrer par type"
+          :aria-label="t('accueil.filtrerParType')"
         >
           <button
             v-show="typesOuverts"
@@ -93,10 +94,10 @@ function choisirType(t: TypePokemon | null) {
             :aria-pressed="type === null"
             @click="choisirType(null)"
           >
-            Tous
+            {{ t('accueil.tous') }}
           </button>
           <button
-            v-for="(label, cle, i) in TYPES"
+            v-for="(cle, i) in TYPES"
             v-show="typesOuverts || type === cle"
             :key="cle"
             type="button"
@@ -104,22 +105,28 @@ function choisirType(t: TypePokemon | null) {
             :style="{ '--t': `var(--type-${cle})`, '--i': i + 1 }"
             @click="choisirType(cle)"
           >
-            {{ label }}
+            {{ t(`types.${cle}`) }}
           </button>
         </div>
       </div>
     </div>
 
     <div v-if="error" class="etat-vide">
-      <strong>PokéAPI ne répond pas.</strong>
-      <p>Vérifie ta connexion, puis réessaie.</p>
-      <button type="button" class="bouton" @click="refresh()">Réessayer</button>
+      <strong>{{ t('commun.apiHs') }}</strong>
+      <p>{{ t('commun.apiHsAide') }}</p>
+      <button type="button" class="bouton" @click="refresh()">
+        {{ t('commun.reessayer') }}
+      </button>
     </div>
 
     <template v-else>
       <p class="compteur" aria-live="polite">
-        <template v-if="statutType === 'pending'">Chargement…</template>
-        <template v-else>{{ resultats.length }} Pokémon</template>
+        <template v-if="statutType === 'pending'">{{
+          t('accueil.chargement')
+        }}</template>
+        <template v-else>{{
+          t('accueil.compteur', { n: resultats.length })
+        }}</template>
       </p>
 
       <div v-if="visibles.length" class="grille-cartes">
@@ -132,16 +139,16 @@ function choisirType(t: TypePokemon | null) {
       </div>
 
       <div v-else-if="statutType !== 'pending'" class="etat-vide">
-        <strong>Aucun Pokémon ne correspond.</strong>
-        <p>Essaie un autre nom, ou retire le filtre de type.</p>
+        <strong>{{ t('accueil.aucunResultat') }}</strong>
+        <p>{{ t('accueil.aucunResultatAide') }}</p>
       </div>
 
       <div v-if="resultats.length > limite" class="plus">
         <button type="button" class="bouton" @click="limite += PAR_PAGE">
-          Voir plus
-          <span class="plus__restant"
-            >{{ resultats.length - limite }} restants</span
-          >
+          {{ t('accueil.voirPlus') }}
+          <span class="plus__restant">{{
+            t('accueil.restants', resultats.length - limite)
+          }}</span>
         </button>
       </div>
     </template>
@@ -309,15 +316,6 @@ function choisirType(t: TypePokemon | null) {
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--texte-doux);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 /* Sur mobile, les 18 types tiennent mieux sur une ligne qui défile */

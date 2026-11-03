@@ -99,6 +99,19 @@ describe('API Hono + Supabase', () => {
     },
   )
 
+  it('renvoie l’erreur dans la langue demandée par Accept-Language', async () => {
+    const res = await app.request('/wishlist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      body: JSON.stringify({ id: -1 }),
+    })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ erreur: 'Invalid id' })
+  })
+
   it('POST /wishlist renvoie 400 pour un JSON cassé', async () => {
     const res = await app.request('/wishlist', {
       method: 'POST',

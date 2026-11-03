@@ -5,10 +5,14 @@ const { data: pokemon } = useLazyAsyncData(`pokemon-${props.id}`, () =>
   recupererPokemon(props.id),
 )
 const { estFavori, basculer } = useFavoris()
+const { t } = useI18n()
+const localePath = useLocalePath()
 
 const nom = computed(() => formaterNom(pokemon.value?.nom ?? props.nom ?? ''))
 const favori = computed(() => estFavori(props.id))
-const numero = computed(() => `N° ${String(props.id).padStart(4, '0')}`)
+const numero = computed(() =>
+  t('commun.numero', { numero: String(props.id).padStart(4, '0') }),
+)
 const couleur = computed(
   () => `var(--type-${pokemon.value?.types[0] ?? 'normal'})`,
 )
@@ -16,9 +20,9 @@ const couleur = computed(
 const stats = computed(() =>
   pokemon.value
     ? [
-        { label: 'Attaque', valeur: pokemon.value.attaque },
-        { label: 'Défense', valeur: pokemon.value.defense },
-        { label: 'Vitesse', valeur: pokemon.value.vitesse },
+        { label: t('stats.attaque'), valeur: pokemon.value.attaque },
+        { label: t('stats.defense'), valeur: pokemon.value.defense },
+        { label: t('stats.vitesse'), valeur: pokemon.value.vitesse },
       ]
     : [],
 )
@@ -58,11 +62,14 @@ function relacher() {
   >
     <header class="carte__tete">
       <h3 class="carte__nom">
-        <NuxtLink :to="`/pokemon/${id}`" class="carte__lien">{{
+        <NuxtLink :to="localePath(`/pokemon/${id}`)" class="carte__lien">{{
           nom
         }}</NuxtLink>
       </h3>
-      <p v-if="pokemon" class="carte__pv"><small>PV</small>{{ pokemon.pv }}</p>
+      <p v-if="pokemon" class="carte__pv">
+        <small>{{ t('stats.pv') }}</small
+        >{{ pokemon.pv }}
+      </p>
     </header>
 
     <div class="carte__fenetre">
@@ -78,9 +85,7 @@ function relacher() {
         type="button"
         class="carte__fav"
         :aria-pressed="favori"
-        :aria-label="
-          favori ? `Retirer ${nom} des favoris` : `Ajouter ${nom} aux favoris`
-        "
+        :aria-label="t(favori ? 'carte.retirer' : 'carte.ajouter', { nom })"
         @click="basculer(id)"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -98,7 +103,7 @@ function relacher() {
           :key="type"
           :style="{ '--t': `var(--type-${type})` }"
         >
-          {{ TYPES[type] ?? type }}
+          {{ t(`types.${type}`) }}
         </li>
       </ul>
 

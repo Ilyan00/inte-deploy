@@ -21,6 +21,10 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # Avant l'install : pas de dépendance, et une traduction manquante échoue tout de suite
+      - name: Traductions
+        run: node scripts/check-i18n.mjs
+
       # postinstall lance `nuxt prepare`, qui génère .nuxt/ dont dépend la config ESLint
       - run: pnpm install --frozen-lockfile
 

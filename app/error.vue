@@ -3,14 +3,21 @@ import type { NuxtError } from '#app'
 
 const props = defineProps<{ error: NuxtError }>()
 
+const { t } = useI18n()
+const localePath = useLocalePath()
+// error.vue remplace app.vue : il faut reposer lang ici
+const head = useLocaleHead()
+
 const est404 = computed(() => props.error.statusCode === 404)
 
 useHead({
-  title: () => (est404.value ? 'Introuvable · PokéGang' : 'Erreur · PokéGang'),
+  htmlAttrs: { lang: () => head.value.htmlAttrs.lang },
+  title: () =>
+    `${t(est404.value ? 'erreur.titreIntrouvable' : 'erreur.titreErreur')} · PokéGang`,
 })
 
 // clearError réinitialise l'état d'erreur de Nuxt, sinon la page d'erreur reste affichée
-const retour = () => clearError({ redirect: '/' })
+const retour = () => clearError({ redirect: localePath('/') })
 </script>
 
 <template>
@@ -18,15 +25,15 @@ const retour = () => clearError({ redirect: '/' })
     <p class="erreur__code">{{ error.statusCode }}</p>
     <div class="etat-vide">
       <template v-if="est404">
-        <strong>Ce Pokémon n'existe pas.</strong>
-        <p>Vérifie le nom ou le numéro dans l'adresse (ex. /pokemon/25).</p>
+        <strong>{{ t('erreur.introuvable') }}</strong>
+        <p>{{ t('erreur.introuvableAide') }}</p>
       </template>
       <template v-else>
-        <strong>Quelque chose s'est mal passé.</strong>
-        <p>Réessaie dans un instant.</p>
+        <strong>{{ t('erreur.generique') }}</strong>
+        <p>{{ t('erreur.generiqueAide') }}</p>
       </template>
       <button type="button" class="bouton" @click="retour">
-        Retour à la collection
+        {{ t('erreur.retour') }}
       </button>
     </div>
   </main>

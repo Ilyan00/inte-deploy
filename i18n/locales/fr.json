@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "description": "Parcours les 1025 Pokémon sous forme de cartes et range tes préférés dans ton classeur."
+  },
+  "nav": {
+    "principale": "Navigation principale",
+    "collection": "Collection",
+    "favoris": "Favoris",
+    "langue": "Langue"
+  },
+  "pied": {
+    "donnees": "Données",
+    "copyright": "Pokémon © Nintendo / Game Freak."
+  },
+  "commun": {
+    "apiHs": "PokéAPI ne répond pas.",
+    "apiHsAide": "Vérifie ta connexion, puis réessaie.",
+    "reessayer": "Réessayer",
+    "numero": "N° {numero}"
+  },
+  "accueil": {
+    "titre": "Attrapez les tous",
+    "rechercher": "Rechercher un Pokémon",
+    "placeholder": "Pikachu, #25…",
+    "types": "Types",
+    "filtrerParType": "Filtrer par type",
+    "tous": "Tous",
+    "chargement": "Chargement…",
+    "compteur": "{n} Pokémon",
+    "aucunResultat": "Aucun Pokémon ne correspond.",
+    "aucunResultatAide": "Essaie un autre nom, ou retire le filtre de type.",
+    "voirPlus": "Voir plus",
+    "restants": "{n} restant | {n} restants"
+  },
+  "favoris": {
+    "titreOnglet": "Mes favoris",
+    "titre": "Mon classeur",
+    "compteur": "{n} carte rangée. | {n} cartes rangées.",
+    "aide": "Clique à nouveau sur l'étoile pour en retirer une.",
+    "vide": "Ton classeur est vide.",
+    "videAide": "Clique sur l'étoile d'une carte pour l'ajouter ici.",
+    "parcourir": "Parcourir la collection"
+  },
+  "carte": {
+    "ajouter": "Ajouter {nom} aux favoris",
+    "retirer": "Retirer {nom} des favoris"
+  },
+  "fiche": {
+    "retour": "← Collection",
+    "taille": "Taille",
+    "poids": "Poids",
+    "talents": "Talents",
+    "cache": "(caché)",
+    "statsDeBase": "Stats de base",
+    "total": "Total",
+    "dansClasseur": "★ Dans mon classeur",
+    "ajouterClasseur": "☆ Ajouter au classeur",
+    "voisins": "Pokémon voisins",
+    "introuvable": "Pokémon introuvable"
+  },
+  "stats": {
+    "pv": "PV",
+    "attaque": "Attaque",
+    "defense": "Défense",
+    "attaqueSpe": "Atq. Spé",
+    "defenseSpe": "Déf. Spé",
+    "vitesse": "Vitesse"
+  },
+  "erreur": {
+    "titreIntrouvable": "Introuvable",
+    "titreErreur": "Erreur",
+    "introuvable": "Ce Pokémon n'existe pas.",
+    "introuvableAide": "Vérifie le nom ou le numéro dans l'adresse (ex. /pokemon/25).",
+    "generique": "Quelque chose s'est mal passé.",
+    "generiqueAide": "Réessaie dans un instant.",
+    "retour": "Retour à la collection"
+  },
+  "types": {
+    "normal": "Normal",
+    "fire": "Feu",
+    "water": "Eau",
+    "grass": "Plante",
+    "electric": "Électrik",
+    "ice": "Glace",
+    "fighting": "Combat",
+    "poison": "Poison",
+    "ground": "Sol",
+    "flying": "Vol",
+    "psychic": "Psy",
+    "bug": "Insecte",
+    "rock": "Roche",
+    "ghost": "Spectre",
+    "dragon": "Dragon",
+    "dark": "Ténèbres",
+    "steel": "Acier",
+    "fairy": "Fée"
+  }
+}

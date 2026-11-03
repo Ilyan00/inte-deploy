@@ -5,7 +5,15 @@ export function useFavoris() {
   // Faux tant que la wishlist n'a pas été chargée depuis l'API (voir plugins/favoris.ts)
   const pret = useState('favoris-pret', () => false)
 
-  const api = $fetch.create({ baseURL: useRuntimeConfig().public.apiUrl })
+  // $i18n plutôt que useI18n() : ce composable est aussi appelé depuis un plugin.
+  const { $i18n } = useNuxtApp()
+  const api = $fetch.create({
+    baseURL: useRuntimeConfig().public.apiUrl,
+    // L'API renvoie ses messages d'erreur dans la langue affichée par le front
+    onRequest: ({ options }) => {
+      options.headers.set('Accept-Language', $i18n.locale.value)
+    },
+  })
 
   const estFavori = (id: number) => favoris.value.some((f) => f.id === id)
 

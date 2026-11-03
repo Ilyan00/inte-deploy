@@ -1,6 +1,25 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+  i18n: {
+    // Fichiers dans i18n/locales/ ; en.json sert de référence à scripts/check-i18n.mjs
+    locales: [
+      { code: 'fr', language: 'fr-FR', name: 'Français', file: 'fr.json' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'es', language: 'es-ES', name: 'Español', file: 'es.json' },
+      { code: 'pt', language: 'pt-BR', name: 'Português', file: 'pt.json' },
+    ],
+    defaultLocale: 'fr',
+    // Sert aux liens hreflang absolus ; surchargé en prod par NUXT_PUBLIC_I18N_BASE_URL
+    baseUrl: 'http://localhost:3000',
+    // Le français garde les URLs actuelles, les autres langues sont préfixées (/en/favoris)
+    strategy: 'prefix_except_default',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_langue',
+      redirectOn: 'root',
+    },
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
@@ -10,16 +29,9 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      htmlAttrs: { lang: 'fr' },
       title: 'PokéGang',
-      meta: [
-        {
-          name: 'description',
-          content:
-            'Parcours les 1025 Pokémon sous forme de cartes et range tes préférés dans ton classeur.',
-        },
-        { name: 'theme-color', content: '#14110f' },
-      ],
+      // lang et description dépendent de la langue : posés dans app.vue
+      meta: [{ name: 'theme-color', content: '#14110f' }],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {

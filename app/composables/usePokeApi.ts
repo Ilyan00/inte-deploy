@@ -3,26 +3,27 @@ const API = 'https://pokeapi.co/api/v2'
 // Au-delà de 1025, PokéAPI renvoie des formes alternatives (Méga, Gigamax…) qu'on ne veut pas en doublon.
 export const NB_POKEMON = 1025
 
-export const TYPES: Record<TypePokemon, string> = {
-  normal: 'Normal',
-  fire: 'Feu',
-  water: 'Eau',
-  grass: 'Plante',
-  electric: 'Électrik',
-  ice: 'Glace',
-  fighting: 'Combat',
-  poison: 'Poison',
-  ground: 'Sol',
-  flying: 'Vol',
-  psychic: 'Psy',
-  bug: 'Insecte',
-  rock: 'Roche',
-  ghost: 'Spectre',
-  dragon: 'Dragon',
-  dark: 'Ténèbres',
-  steel: 'Acier',
-  fairy: 'Fée',
-}
+// Ordre d'affichage des filtres ; les libellés traduits sont dans i18n/locales (types.*).
+export const TYPES: TypePokemon[] = [
+  'normal',
+  'fire',
+  'water',
+  'grass',
+  'electric',
+  'ice',
+  'fighting',
+  'poison',
+  'ground',
+  'flying',
+  'psychic',
+  'bug',
+  'rock',
+  'ghost',
+  'dragon',
+  'dark',
+  'steel',
+  'fairy',
+]
 
 const idDepuisUrl = (url: string) =>
   Number(url.split('/').filter(Boolean).pop())

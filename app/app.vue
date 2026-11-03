@@ -1,22 +1,56 @@
 <script setup lang="ts">
 const { favoris, pret } = useFavoris()
+const { t, locale, locales, setLocale } = useI18n()
+const localePath = useLocalePath()
+
+// lang, dir et liens hreflang alternatifs, mis à jour à chaque changement de langue
+const head = useLocaleHead()
+useHead({
+  htmlAttrs: {
+    lang: () => head.value.htmlAttrs.lang,
+    dir: () => head.value.htmlAttrs.dir,
+  },
+  link: () => head.value.link,
+  meta: () => [
+    ...(head.value.meta ?? []),
+    { name: 'description', content: t('meta.description') },
+  ],
+})
 </script>
 
 <template>
   <header class="entete">
     <div class="conteneur entete__contenu">
-      <NuxtLink to="/" class="logo">
+      <NuxtLink :to="localePath('/')" class="logo">
         <span class="logo__pastille" aria-hidden="true" />
         <p>PokéGang</p>
       </NuxtLink>
 
-      <nav class="nav" aria-label="Navigation principale">
-        <NuxtLink to="/">Collection</NuxtLink>
-        <NuxtLink to="/favoris">
-          Favoris
-          <span v-if="pret" class="nav__compteur">{{ favoris.length }}</span>
-        </NuxtLink>
-      </nav>
+      <div class="entete__droite">
+        <nav class="nav" :aria-label="t('nav.principale')">
+          <NuxtLink :to="localePath('/')">{{ t('nav.collection') }}</NuxtLink>
+          <NuxtLink :to="localePath('/favoris')">
+            {{ t('nav.favoris') }}
+            <span v-if="pret" class="nav__compteur">{{ favoris.length }}</span>
+          </NuxtLink>
+        </nav>
+
+        <label class="langue">
+          <span class="sr-only">{{ t('nav.langue') }}</span>
+          <select
+            :value="locale"
+            @change="
+              setLocale(
+                ($event.target as HTMLSelectElement).value as typeof locale,
+              )
+            "
+          >
+            <option v-for="l in locales" :key="l.code" :value="l.code">
+              {{ l.code.toUpperCase() }}
+            </option>
+          </select>
+        </label>
+      </div>
     </div>
   </header>
 
@@ -25,9 +59,9 @@ const { favoris, pret } = useFavoris()
   </main>
 
   <footer class="conteneur pied">
-    Données
+    {{ t('pied.donnees') }}
     <a href="https://pokeapi.co/" target="_blank" rel="noopener">PokéAPI</a>.
-    Pokémon © Nintendo / Game Freak.
+    {{ t('pied.copyright') }}
   </footer>
 </template>
 
@@ -79,9 +113,26 @@ const { favoris, pret } = useFavoris()
     );
 }
 
+.entete__droite {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .nav {
   display: flex;
   gap: 0.25rem;
+}
+
+.langue select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--bord);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--texte);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .nav a {

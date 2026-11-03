@@ -13,12 +13,14 @@
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
+    "i18n:check": "node scripts/check-i18n.mjs",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
     "@nuxt/eslint": "1.17.0",
+    "@nuxtjs/i18n": "^10.6.0",
     "eslint": "^10.14.0",
     "nuxt": "^4.6.3",
     "prettier": "^3.9.10",
