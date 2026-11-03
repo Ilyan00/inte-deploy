@@ -54,3 +54,51 @@ jobs:
 
       - name: Tests
         run: pnpm --filter api test
+
+  deploiement:
+    name: Déploiement Lambda
+    # Uniquement si la CI est verte, et jamais depuis une PR.
+    needs: api
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Deux pushs rapprochés : le second attend, pour ne pas uploader dans le désordre.
+    concurrency: deploiement-lambda
+    permissions:
+      id-token: write # OIDC : AWS délivre un accès temporaire, aucune clé stockée dans GitHub
+      contents: read
+    env:
+      AWS_REGION: eu-west-3
+      FONCTION: pokegang-api
+      API_URL: https://dwwu5ahtnb.execute-api.eu-west-3.amazonaws.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter api
+
+      - name: Build du zip
+        run: pnpm --filter api build:lambda
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Mise à jour du code de la Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "$FONCTION" \
+            --zip-file fileb://api/dist/lambda.zip
+          aws lambda wait function-updated --function-name "$FONCTION"
+
+      # Le job échoue si la nouvelle version ne répond pas : on le voit tout de suite dans GitHub.
+      - name: Vérification
+        run: curl -fsS "$API_URL/health"
