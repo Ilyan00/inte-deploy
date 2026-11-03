@@ -9,7 +9,8 @@
     "test": "vitest run",
     "db:start": "supabase start --workdir .. -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api",
     "db:stop": "supabase stop --workdir ..",
-    "db:reset": "supabase db reset --workdir .."
+    "db:reset": "supabase db reset --workdir ..",
+    "build:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.mjs && cd dist && rm -f lambda.zip && zip -q lambda.zip index.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
     "supabase": "^3.0.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
