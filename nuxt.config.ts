@@ -1,6 +1,24 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { NB_POKEMON } from './shared/utils/pokedex'
+
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+  hooks: {
+    // Chaque fiche /pokemon/:id sort en HTML statique au build : plus besoin
+    // d'appeler PokéAPI à chaque visite. Les autres langues restent en SSR.
+    async 'prerender:routes'({ routes }) {
+      const res = await fetch(
+        `https://pokeapi.co/api/v2/pokemon?limit=${NB_POKEMON}`,
+      )
+      if (!res.ok) throw new Error(`PokéAPI injoignable (${res.status})`)
+      const { results } = (await res.json()) as { results: { url: string }[] }
+
+      for (const { url } of results) {
+        const id = url.split('/').filter(Boolean).pop()
+        routes.add(`/pokemon/${id}`)
+      }
+    },
+  },
   i18n: {
     // Fichiers dans i18n/locales/ ; en.json sert de référence à scripts/check-i18n.mjs
     locales: [
