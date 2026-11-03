@@ -71,6 +71,10 @@ jobs:
       - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       # Build sur le runner puis upload du résultat : c'est le code testé juste avant qui part.
+      # Sur GitHub Actions, Nitro détecte l'environnement GitHub et non Vercel :
+      # sans ça il sort un serveur Node que Vercel ne sait pas déployer.
       - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NITRO_PRESET: vercel
 
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
