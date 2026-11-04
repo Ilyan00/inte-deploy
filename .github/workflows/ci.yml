@@ -201,8 +201,10 @@ jobs:
             --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --id "$ID"
 
       # SSR_URL en plus : le script compare le HTML des deux modes (title, h1, description).
+      # API_URL vidé : celui du job sert au build, l'API a ses propres smoke tests (api.yml).
       - name: Smoke tests
         run: node scripts/smoke.mjs
         env:
+          API_URL: ''
           SSG_URL: ${{ vars.SSG_URL }}
           SSR_URL: https://inte-deploy.vercel.app

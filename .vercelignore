@@ -1,0 +1,3 @@
+# L'API tourne sur Lambda : sans ça, Vercel ferait de chaque fichier de api/ une fonction serverless
+# (et dépasserait la limite de 12 fonctions du plan Hobby).
+/api
