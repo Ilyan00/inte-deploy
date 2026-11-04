@@ -12,5 +12,12 @@ export default defineConfig({
     },
     // Les fichiers partagent la même table : on les lance l'un après l'autre.
     fileParallelism: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      include: ['src/**/*.ts'],
+      // Points d'entrée (serveur Node, Lambda, CLI) : rien à tester unitairement dedans.
+      exclude: ['src/index.ts', 'src/lambda.ts', 'src/migrer.ts'],
+    },
   },
 })

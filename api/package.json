@@ -7,6 +7,7 @@
     "start": "tsx src/index.ts",
     "typecheck": "tsc",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "db:start": "supabase start --workdir .. -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api",
     "db:stop": "supabase stop --workdir ..",
     "db:reset": "supabase db reset --workdir .. && pnpm db:migrate",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "5.0.5",
     "esbuild": "^0.28.2",
     "supabase": "^3.0.0",
     "tsx": "^4.23.15",

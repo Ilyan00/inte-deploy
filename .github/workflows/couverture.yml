@@ -1,0 +1,89 @@
+name: Couverture
+
+# Rapport de couverture Vitest (front + API), publié sur GitHub Pages avec les badges du README.
+# Sur une PR : juste le résumé dans le job. Sur main : publication.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  couverture:
+    name: Couverture des tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Couverture front
+        run: pnpm test:coverage
+
+      # Les tests de l'API tapent une vraie base : même Supabase jetable que la CI API.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase local
+        run: supabase start -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api
+
+      - name: Migrations
+        run: pnpm --filter api db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+      - name: Couverture API
+        run: pnpm --filter api test:coverage
+
+      # Un seul site : /front et /api pour les rapports HTML, badges à la racine.
+      - name: Rapport et badges
+        run: |
+          mkdir -p site
+          cp -r coverage site/front
+          cp -r api/coverage site/api
+          node scripts/badge-couverture.mjs coverage/coverage-summary.json "couverture front" site/badge-front.json
+          node scripts/badge-couverture.mjs api/coverage/coverage-summary.json "couverture API" site/badge-api.json
+          cat > site/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><title>Couverture PokéGang</title>
+          <h1>Couverture des tests</h1>
+          <ul><li><a href="front/">Front (Nuxt)</a></li><li><a href="api/">API (Hono)</a></li></ul>
+          HTML
+
+      # Rapport téléchargeable depuis le run, y compris sur les PR.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rapport-couverture
+          path: site/
+          retention-days: 14
+
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+  publication:
+    name: Publication GitHub Pages
+    needs: couverture
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    # Pages n'accepte qu'un déploiement à la fois.
+    concurrency: pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4
