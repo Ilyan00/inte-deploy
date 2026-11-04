@@ -1,0 +1,164 @@
+name: Rollback
+
+# Lancé à la main (Actions > Rollback > Run workflow) quand une version en prod est cassée.
+# Ne touche jamais à la base : les migrations sont écrites pour rester compatibles avec
+# l'ancien code (expand / contract), donc revenir en arrière sur le code suffit.
+on:
+  workflow_dispatch:
+    inputs:
+      cible:
+        description: Ce qu'on restaure
+        type: choice
+        options: [front-ssr-vercel, api-lambda, front-ssg]
+      version:
+        description: >-
+          Vercel : URL du déploiement à restaurer (vide = le précédent).
+          Lambda / SSG : SHA ou tag git d'une version stable (obligatoire).
+        required: false
+        type: string
+
+env:
+  AWS_REGION: eu-west-3
+  API_URL: https://dwwu5ahtnb.execute-api.eu-west-3.amazonaws.com
+  SSR_URL: https://inte-deploy.vercel.app
+
+jobs:
+  vercel:
+    name: Rollback Vercel
+    if: inputs.cible == 'front-ssr-vercel'
+    runs-on: ubuntu-latest
+    # Même file que le déploiement : pas de rollback pendant qu'un deploy est en cours.
+    concurrency: deploiement-vercel
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: npm install -g vercel@61.0.0
+
+      # Instantané : Vercel remet en prod un build déjà existant, rien n'est recompilé.
+      # Attention : après un rollback, Vercel ne publie plus les nouveaux deploys sur le domaine
+      # de prod tant qu'on n'a pas fait `vercel promote` (ou « Undo Rollback » dans le dashboard).
+      - run: vercel rollback ${{ inputs.version }} --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Smoke tests
+        run: node scripts/smoke.mjs
+        env:
+          SSR_URL: ${{ env.SSR_URL }}
+
+  lambda:
+    name: Rollback Lambda
+    if: inputs.cible == 'api-lambda'
+    runs-on: ubuntu-latest
+    concurrency: deploiement-lambda
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      FONCTION: pokegang-api
+    steps:
+      - name: Version demandée
+        if: inputs.version == ''
+        run: |
+          echo "::error::Donne le SHA ou le tag git de la version à restaurer"
+          exit 1
+
+      # On reconstruit le zip depuis le code de cette version : même source, même build.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter api
+
+      # Pas de db:migrate ici : l'ancien dossier ne contient pas les migrations récentes,
+      # le runner refuserait de tourner (et c'est voulu, on ne "dé-migre" pas une base).
+      - name: Build du zip
+        run: pnpm --filter api build:lambda
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Restauration du code de la Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "$FONCTION" \
+            --zip-file fileb://api/dist/lambda.zip
+          aws lambda wait function-updated --function-name "$FONCTION"
+
+      # Script pris sur main : celui de la vieille version ne connaît peut-être pas toutes les routes.
+      # On ne vérifie que /health, une ancienne version peut ne pas avoir /likes.
+      - name: Smoke test
+        run: curl -fsS "$API_URL/health"
+
+  ssg:
+    name: Rollback SSG
+    if: inputs.cible == 'front-ssg'
+    runs-on: ubuntu-latest
+    concurrency: deploiement-ssg
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Version demandée
+        if: inputs.version == ''
+        run: |
+          echo "::error::Donne le SHA ou le tag git de la version à restaurer"
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Génération statique
+        run: pnpm generate
+        env:
+          NUXT_PUBLIC_API_URL: ${{ env.API_URL }}
+          NUXT_PUBLIC_I18N_BASE_URL: ${{ vars.SSG_URL }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Mêmes commandes que le déploiement (ci.yml, job deploiement-ssg).
+      - name: Envoi sur S3
+        run: |
+          aws s3 sync .output/public/_nuxt "s3://${{ vars.S3_BUCKET }}/_nuxt" \
+            --cache-control "public,max-age=31536000,immutable"
+          aws s3 sync .output/public "s3://${{ vars.S3_BUCKET }}" \
+            --delete --exclude "_nuxt/*" \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      - name: Invalidation CloudFront
+        run: |
+          ID=$(aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*" --query Invalidation.Id --output text)
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --id "$ID"
+
+      - name: Smoke test
+        run: curl -fsS -o /dev/null "${{ vars.SSG_URL }}/pokemon/25"
