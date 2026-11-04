@@ -43,3 +43,8 @@ export interface WishlistItem {
   id: Pokemon['id']
   ajouteLe: string // date ISO : reste lisible une fois sérialisée dans le localStorage
 }
+
+export interface Likes {
+  id: Pokemon['id']
+  total: number
+}

@@ -33,6 +33,7 @@ const couleur = computed(
 useHead({ title: () => `${nom.value} · PokéGang` })
 
 const { estFavori, basculer } = useFavoris()
+const { total: likes, enCours, liker } = useLikes(() => pokemon.value?.id)
 
 const stats = computed(() => {
   const p = pokemon.value
@@ -147,20 +148,31 @@ const suivant = computed(() =>
             </dl>
           </section>
 
-          <button
-            type="button"
-            class="bouton"
-            :aria-pressed="estFavori(pokemon.id)"
-            @click="basculer(pokemon.id)"
-          >
-            {{
-              t(
-                estFavori(pokemon.id)
-                  ? 'fiche.dansClasseur'
-                  : 'fiche.ajouterClasseur',
-              )
-            }}
-          </button>
+          <div class="fiche__actions">
+            <button
+              type="button"
+              class="bouton"
+              :aria-pressed="estFavori(pokemon.id)"
+              @click="basculer(pokemon.id)"
+            >
+              {{
+                t(
+                  estFavori(pokemon.id)
+                    ? 'fiche.dansClasseur'
+                    : 'fiche.ajouterClasseur',
+                )
+              }}
+            </button>
+            <button
+              type="button"
+              class="bouton"
+              :disabled="enCours || likes === undefined"
+              @click="liker()"
+            >
+              {{ t('fiche.liker') }}
+              <span class="fiche__likes">{{ likes ?? '…' }}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -350,6 +362,17 @@ const suivant = computed(() =>
 .fiche .bouton[aria-pressed='true'] {
   border-color: var(--or);
   color: var(--or);
+}
+
+.fiche__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.fiche__likes {
+  margin-left: 0.3rem;
+  font-family: var(--mono);
 }
 
 .fiche__voisins {

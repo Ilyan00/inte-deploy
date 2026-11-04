@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { WishlistItem } from '../../shared/types/pokemon'
+import type { Likes, WishlistItem } from '../../shared/types/pokemon'
 import { detecterLangue, t } from './i18n'
 import {
   addPokemon,
@@ -40,10 +40,15 @@ export function creerApp(supabase: SupabaseClient) {
     return (data as LigneWishlist[]).map(versItem)
   }
 
-  // Le navigateur appelle l'API depuis l'origine du front Nuxt.
+  // Le navigateur appelle l'API depuis l'origine du front Nuxt. Plusieurs fronts en prod
+  // (SSR sur Vercel, SSG sur CloudFront) : FRONT_URL accepte une liste séparée par des virgules.
   app.use(
     '*',
-    cors({ origin: process.env.FRONT_URL ?? 'http://localhost:3000' }),
+    cors({
+      origin: (process.env.FRONT_URL ?? 'http://localhost:3000')
+        .split(',')
+        .map((url) => url.trim()),
+    }),
   )
 
   app.get('/health', (c) => c.json({ status: 'ok' }))
@@ -92,6 +97,26 @@ export function creerApp(supabase: SupabaseClient) {
       .eq('pokemon_id', id)
     if (error) throw erreurBdd(error)
     return c.json(liste.find((item) => item.id === id))
+  })
+
+  app.get('/likes/:id', async (c) => {
+    const id = validerId(Number(c.req.param('id')))
+    const { data, error } = await supabase
+      .from('likes')
+      .select('total')
+      .eq('pokemon_id', id)
+      .maybeSingle()
+    if (error) throw erreurBdd(error)
+    // Jamais liké = pas de ligne : 0 plutôt qu'une 404, le compteur existe pour tout Pokémon.
+    return c.json<Likes>({ id, total: data?.total ?? 0 })
+  })
+
+  app.post('/likes/:id', async (c) => {
+    const id = validerId(Number(c.req.param('id')))
+    // L'incrément se fait en base (fonction liker, voir migrations) pour rester atomique.
+    const { data, error } = await supabase.rpc('liker', { p_pokemon_id: id })
+    if (error) throw erreurBdd(error)
+    return c.json<Likes>({ id, total: data as number })
   })
 
   // Les règles métier lèvent une ErreurWishlist : on la traduit en réponse HTTP ici,

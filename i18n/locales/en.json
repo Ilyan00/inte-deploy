@@ -56,7 +56,8 @@
     "dansClasseur": "★ In my binder",
     "ajouterClasseur": "☆ Add to binder",
     "voisins": "Neighbouring Pokémon",
-    "introuvable": "Pokémon not found"
+    "introuvable": "Pokémon not found",
+    "liker": "♥ Like"
   },
   "stats": {
     "pv": "HP",
