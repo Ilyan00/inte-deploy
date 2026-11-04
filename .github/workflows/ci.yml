@@ -43,10 +43,63 @@ jobs:
       - name: Build
         run: pnpm build
 
+  e2e:
+    name: E2E Playwright
+    # Parcours complets navigateur → Nuxt → API → Supabase local, une fois la CI de base verte.
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Base jetable, migrée par le même runner que le cloud (comme la CI API).
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase local
+        run: supabase start -x studio,imgproxy,mailpit,vector,logflare,supavisor,edge-runtime,realtime,storage-api
+
+      - name: Migrations
+        run: pnpm --filter api db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+      - name: Navigateur Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      # L'URL de l'API est figée dans les fiches pré-rendues : il faut la donner dès le build.
+      - name: Build
+        run: pnpm build
+        env:
+          NUXT_PUBLIC_API_URL: http://localhost:3334
+
+      - name: Tests E2E
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rapport-playwright
+          path: playwright-report/
+          retention-days: 7
+
   deploiement:
     name: Déploiement Vercel
     # Vercel ne déploie plus seul (vercel.json) : c'est la CI verte qui décide.
-    needs: lint
+    needs: [lint, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     concurrency: deploiement-vercel
@@ -78,3 +131,78 @@ jobs:
           NITRO_PRESET: vercel
 
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Le job passe au rouge si la prod ne répond pas ou sert une coquille vide.
+      - name: Smoke tests
+        run: node scripts/smoke.mjs
+        env:
+          SSR_URL: https://inte-deploy.vercel.app
+
+  deploiement-ssg:
+    name: Déploiement SSG (S3 + CloudFront)
+    needs: [lint, e2e]
+    # Ignoré tant que l'infra n'existe pas : les variables du dépôt sont créées avec elle
+    # (Settings > Secrets and variables > Actions > Variables, voir README).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.S3_BUCKET != ''
+    runs-on: ubuntu-latest
+    concurrency: deploiement-ssg
+    permissions:
+      id-token: write # OIDC, comme le déploiement Lambda
+      contents: read
+    env:
+      AWS_REGION: eu-west-3
+      API_URL: https://dwwu5ahtnb.execute-api.eu-west-3.amazonaws.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Tout le site devient du HTML au build : l'URL de l'API y est figée, comme pour les
+      # fiches pré-rendues sur Vercel. Seuls les appels faits par le navigateur restent dynamiques.
+      - name: Génération statique
+        run: pnpm generate
+        env:
+          NUXT_PUBLIC_API_URL: ${{ env.API_URL }}
+          NUXT_PUBLIC_I18N_BASE_URL: ${{ vars.SSG_URL }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Les assets d'abord : le nouveau HTML ne doit jamais pointer vers un JS pas encore envoyé.
+      # Leurs noms sont hashés, donc cache d'un an ; le HTML, lui, est revalidé à chaque visite.
+      # _nuxt/ n'est jamais purgé : un visiteur sur l'ancienne version garde ses fichiers.
+      - name: Envoi sur S3
+        run: |
+          aws s3 sync .output/public/_nuxt "s3://${{ vars.S3_BUCKET }}/_nuxt" \
+            --cache-control "public,max-age=31536000,immutable"
+          aws s3 sync .output/public "s3://${{ vars.S3_BUCKET }}" \
+            --delete --exclude "_nuxt/*" \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      # CloudFront garde l'ancien HTML en cache : on le purge, et on attend la fin
+      # pour que les smoke tests voient bien la nouvelle version.
+      - name: Invalidation CloudFront
+        run: |
+          ID=$(aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*" --query Invalidation.Id --output text)
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --id "$ID"
+
+      # SSR_URL en plus : le script compare le HTML des deux modes (title, h1, description).
+      - name: Smoke tests
+        run: node scripts/smoke.mjs
+        env:
+          SSG_URL: ${{ vars.SSG_URL }}
+          SSR_URL: https://inte-deploy.vercel.app

@@ -10,6 +10,7 @@ on:
         'shared/types/**',
         'supabase/**',
         'pnpm-lock.yaml',
+        'scripts/smoke.mjs',
         '.github/workflows/api.yml',
       ]
   pull_request:
@@ -19,6 +20,7 @@ on:
         'shared/types/**',
         'supabase/**',
         'pnpm-lock.yaml',
+        'scripts/smoke.mjs',
         '.github/workflows/api.yml',
       ]
 
@@ -112,5 +114,6 @@ jobs:
           aws lambda wait function-updated --function-name "$FONCTION"
 
       # Le job échoue si la nouvelle version ne répond pas : on le voit tout de suite dans GitHub.
-      - name: Vérification
-        run: curl -fsS "$API_URL/health"
+      # API_URL est déjà dans l'env du job.
+      - name: Smoke tests
+        run: node scripts/smoke.mjs
