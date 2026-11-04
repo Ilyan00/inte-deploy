@@ -22,10 +22,8 @@ export const TYPES: TypePokemon[] = [
   'fairy',
 ]
 
-const idDepuisUrl = (url: string) => {
-  console.log('debug', url)
-  return Number(url.split('/').filter(Boolean).pop())
-}
+const idDepuisUrl = (url: string) =>
+  Number(url.split('/').filter(Boolean).pop())
 
 // L'URL de l'artwork se déduit de l'id : pas besoin d'attendre le détail pour afficher l'image.
 export const imagePokemon = (id: number) =>
