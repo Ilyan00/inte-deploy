@@ -38,6 +38,9 @@ export default defineNuxtConfig({
       redirectOn: 'root',
     },
   },
+  // Les E2E lancent leur propre nuxt dev : dossier séparé pour ne pas écraser
+  // celui d'un `pnpm dev` déjà ouvert (voir playwright.config.ts).
+  buildDir: process.env.NUXT_E2E ? '.nuxt-e2e' : '.nuxt',
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],

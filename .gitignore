@@ -23,3 +23,11 @@ logs
 .env.*
 !.env.example
 .vercel
+
+# Playwright
+.nuxt-e2e
+test-results
+playwright-report
+
+# Couverture Vitest (publiée par .github/workflows/couverture.yml)
+coverage

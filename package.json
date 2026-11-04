@@ -13,6 +13,9 @@
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "i18n:check": "node scripts/check-i18n.mjs",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -28,6 +31,8 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@vitest/coverage-v8": "5.0.5",
     "concurrently": "^10.0.6",
     "ofetch": "1.5.1",
     "typescript": "^6.0.3",
